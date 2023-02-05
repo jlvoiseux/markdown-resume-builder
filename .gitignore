@@ -2,3 +2,8 @@
 *.html
 /build
 /.vscode
+*.jpg
+*.jpeg
+*.png
+*.pdf
+*.exe

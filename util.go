@@ -36,23 +36,18 @@ func printToPDF(urlstr string, res *[]byte, scale float64) chromedp.Tasks {
 	}
 }
 
-func getImageDimensions(imagePath string) (int, int) {
-	processedPath := imagePath
-	if processedPath[0:7] == "file://" {
-		processedPath = processedPath[7:]
-	}
-
-	file, err := os.Open(processedPath)
+func getImageDimensions(imagePath string) (int, int, error) {
+	file, err := os.Open(imagePath)
 	if err != nil {
-		panic(err)
+		return 0, 0, err
 	}
 	defer file.Close()
 
 	image, _, err := image.DecodeConfig(file)
 	if err != nil {
-		panic(err)
+		return 0, 0, err
 	}
-	return image.Width, image.Height
+	return image.Width, image.Height, nil
 }
 
 func copyFile(src, dst string) (int64, error) {

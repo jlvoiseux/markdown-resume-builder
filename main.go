@@ -12,8 +12,12 @@ func main() {
 
 	ctx, cancel := chromedp.NewContext(context.Background())
 	defer cancel()
-	srv, wg := initServer()
+	srv, wg, err := initServer()
+	if err != nil {
+		panic(err)
+	}
 
 	handleGui(ctx, srv, wg)
+
 	closeServer(ctx, srv, wg)
 }

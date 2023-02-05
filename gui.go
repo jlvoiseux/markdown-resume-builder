@@ -47,6 +47,25 @@ func handleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) {
 	mode.Horizontal = true
 	mode.Required = true
 
+	destinationFolder := widget.NewEntry()
+	destinationFolder.SetPlaceHolder("C:\\Users\\user\\Desktop")
+	destinationFolder.Validator = validation.NewRegexp(`[a-zA-Z]:[\\\/](?:[a-zA-Z0-9-]+[\\\/])*([a-zA-Z0-9-])`, "not a valid Windows Folder path")
+
+	openFolder := widget.NewButton("Browse Folders", func() {
+		fd := dialog.NewFolderOpen(func(reader fyne.ListableURI, err error) {
+			if err != nil {
+				dialog.ShowError(err, window)
+				return
+			}
+			if reader == nil {
+				return
+			}
+			chosenURI := reader.String()[7:]
+			destinationFolder.SetText(chosenURI)
+		}, window)
+		fd.Show()
+	})
+
 	fontAwesomeKit := widget.NewEntry()
 	fontAwesomeKit.SetPlaceHolder("https://kit.fontawesome.com/placeholder.js")
 
@@ -62,7 +81,8 @@ func handleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) {
 			if reader == nil {
 				return
 			}
-			photoFile.SetText(reader.URI().String())
+			chosenURI := reader.URI().String()[7:]
+			photoFile.SetText(chosenURI)
 		}, window)
 		fd.SetFilter(storage.NewExtensionFileFilter([]string{".png", ".jpg", ".jpeg"}))
 		fd.Show()
@@ -81,6 +101,9 @@ func handleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) {
 			{Widget: separator},
 			{Text: "Output format", Widget: mode, HintText: "The output format of your resume"},
 			{Widget: separator},
+			{Text: "Output folder", Widget: destinationFolder},
+			{Widget: openFolder, HintText: "Specify the folder where you want to save your resume. A new folder will be created inside this folder with the output of the resume builder."},
+			{Widget: separator},
 			{Text: "Font Awesome Kit (Optional)", Widget: fontAwesomeKit, HintText: "Your Font Awesome Kit URL, in case you want to use icons"},
 			{Widget: separator},
 			{Text: "Resume Photo (Optional)", Widget: photoFile},
@@ -95,11 +118,15 @@ func handleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) {
 	form.OnSubmit = func() {
 		statusText.SetText("Building resume...")
 		form.Disable()
-		buildResume(ctx, srv, wg, strings.TrimSpace(sourceFile.Text), mode.Selected, strings.TrimSpace(fontAwesomeKit.Text), strings.TrimSpace(photoFile.Text))
+		err := buildResume(ctx, srv, wg, strings.TrimSpace(sourceFile.Text), mode.Selected, strings.TrimSpace(destinationFolder.Text), strings.TrimSpace(fontAwesomeKit.Text), strings.TrimSpace(photoFile.Text))
 		form.Enable()
-		statusText.SetText(fmt.Sprintf("%s resume built successfully", mode.Selected))
+		if err != nil {
+			statusText.SetText(fmt.Sprintf("Error building resume: %v", err))
+		} else {
+			statusText.SetText(fmt.Sprintf("%s resume built successfully", mode.Selected))
+		}
 	}
-	
+
 	grid := container.New(layout.NewGridLayout(1), form, statusText)
 	window.SetContent(grid)
 	window.ShowAndRun()
