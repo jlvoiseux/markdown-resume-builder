@@ -1,4 +1,4 @@
-*.md
+resume.md
 *.html
 /build
 /.vscode
@@ -7,3 +7,4 @@
 *.png
 *.pdf
 *.exe
+/tmp*
