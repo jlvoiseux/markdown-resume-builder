@@ -9,8 +9,10 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/widget"
 )
@@ -66,14 +68,24 @@ func handleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) {
 		fd.Show()
 	})
 
+	separator := widget.NewSeparator()
+
+	statusText := widget.NewLabel("")
+	statusText.Alignment = fyne.TextAlignCenter
+	statusText.TextStyle = fyne.TextStyle{Bold: true}
+
 	form := &widget.Form{
 		Items: []*widget.FormItem{
 			{Text: "Resume Markdown File", Widget: sourceFile},
 			{Widget: openFile, HintText: "Browse your computer to find the Markdown file containing your resume"},
+			{Widget: separator},
 			{Text: "Output format", Widget: mode, HintText: "The output format of your resume"},
+			{Widget: separator},
 			{Text: "Font Awesome Kit (Optional)", Widget: fontAwesomeKit, HintText: "Your Font Awesome Kit URL, in case you want to use icons"},
+			{Widget: separator},
 			{Text: "Resume Photo (Optional)", Widget: photoFile},
 			{Widget: openPhoto, HintText: "Browse your computer to find the your photo"},
+			{Widget: separator},
 		},
 		OnCancel: func() {
 			fmt.Println("Cancelled")
@@ -81,11 +93,14 @@ func handleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) {
 	}
 
 	form.OnSubmit = func() {
+		statusText.SetText("Building resume...")
 		form.Disable()
 		buildResume(ctx, srv, wg, strings.TrimSpace(sourceFile.Text), mode.Selected, strings.TrimSpace(fontAwesomeKit.Text), strings.TrimSpace(photoFile.Text))
 		form.Enable()
+		statusText.SetText(fmt.Sprintf("%s resume built successfully", mode.Selected))
 	}
-
-	window.SetContent(form)
+	
+	grid := container.New(layout.NewGridLayout(1), form, statusText)
+	window.SetContent(grid)
 	window.ShowAndRun()
 }
