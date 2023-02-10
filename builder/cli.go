@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-func HandleCli(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) error {
+func HandleCli(ctx context.Context, srv *http.Server, wg *sync.WaitGroup, cwd string) error {
 	var sourceFile string
 	var mode string
 	var destinationFolder string
@@ -67,7 +67,7 @@ func HandleCli(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) error 
 		}
 	}
 
-	err = buildResume(ctx, srv, wg, sourceFile, mode, destinationFolder, fontAwesomeKitUrl.String(), photoFile)
+	err = buildResume(ctx, srv, wg, cwd, sourceFile, mode, destinationFolder, fontAwesomeKitUrl.String(), photoFile)
 	if err != nil {
 		return err
 	}

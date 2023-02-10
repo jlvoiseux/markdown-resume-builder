@@ -6,16 +6,16 @@ import (
 	"sync"
 )
 
-func InitServer() (*http.Server, *sync.WaitGroup, error) {
+func InitServer(cwd string) (*http.Server, *sync.WaitGroup, error) {
 	httpServerExitDone := &sync.WaitGroup{}
 	httpServerExitDone.Add(1)
-	srv, err := startHttpServer(httpServerExitDone)
+	srv, err := startHttpServer(httpServerExitDone, cwd)
 	return srv, httpServerExitDone, err
 }
 
-func startHttpServer(wg *sync.WaitGroup) (*http.Server, error) {
+func startHttpServer(wg *sync.WaitGroup, cwd string) (*http.Server, error) {
 	srv := &http.Server{Addr: ":3000"}
-	http.Handle("/", http.FileServer(http.Dir(".")))
+	http.Handle("/", http.FileServer(http.Dir(cwd)))
 
 	go func() {
 		defer wg.Done()

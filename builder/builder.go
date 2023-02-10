@@ -16,11 +16,7 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 )
 
-func buildResume(ctx context.Context, srv *http.Server, wg *sync.WaitGroup, sourceFile string, mode string, destinationFolder string, fontAwesomeKitUrl string, photoFile string) error {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
+func buildResume(ctx context.Context, srv *http.Server, wg *sync.WaitGroup, cwd string, sourceFile string, mode string, destinationFolder string, fontAwesomeKitUrl string, photoFile string) error {
 
 	header := `<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="style.css">
@@ -67,7 +63,7 @@ func buildResume(ctx context.Context, srv *http.Server, wg *sync.WaitGroup, sour
 		return err
 	}
 
-	f, err := os.Create("index.html")
+	f, err := os.Create(filepath.Join(cwd, "index.html"))
 	if err != nil {
 		return err
 	}
@@ -121,7 +117,7 @@ func buildResume(ctx context.Context, srv *http.Server, wg *sync.WaitGroup, sour
 		if err := chromedp.Run(ctx, printToPDF(`http://localhost:3000`, &buf, 0.7)); err != nil {
 			return err
 		}
-		if err := os.WriteFile("index.pdf", buf, 0o644); err != nil {
+		if err := os.WriteFile(filepath.Join(cwd, "index.pdf"), buf, 0o644); err != nil {
 			return err
 		}
 	}
@@ -137,22 +133,22 @@ func buildResume(ctx context.Context, srv *http.Server, wg *sync.WaitGroup, sour
 
 	switch mode {
 	case "HTML":
-		_, err = copyFile("index.html", filepath.Join(destinationFolder, "md-resume-builder-output", "resume.html"))
+		_, err = copyFile(filepath.Join(cwd, "index.html"), filepath.Join(destinationFolder, "md-resume-builder-output", "resume.html"))
 		if err != nil {
 			return err
 		}
-		_, err = copyFile("style.css", filepath.Join(destinationFolder, "md-resume-builder-output", "style.css"))
+		_, err = copyFile(filepath.Join(cwd, "style.css"), filepath.Join(destinationFolder, "md-resume-builder-output", "style.css"))
 		if err != nil {
 			return err
 		}
 		if photoFile != "" {
-			_, err = copyFile("photo"+filepath.Ext(photoFile), filepath.Join(destinationFolder, "md-resume-builder-output", "photo"+filepath.Ext(photoFile)))
+			_, err = copyFile(filepath.Join(cwd, filepath.Join("photo", filepath.Ext(photoFile))), filepath.Join(destinationFolder, "md-resume-builder-output", filepath.Join("photo", filepath.Ext(photoFile))))
 			if err != nil {
 				return err
 			}
 		}
 	case "PDF":
-		_, err = copyFile("index.pdf", filepath.Join(destinationFolder, "md-resume-builder-output", "resume.pdf"))
+		_, err = copyFile(filepath.Join(cwd, "index.pdf"), filepath.Join(destinationFolder, "md-resume-builder-output", "resume.pdf"))
 		if err != nil {
 			return err
 		}

@@ -17,7 +17,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func HandleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) error {
+func HandleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup, cwd string) error {
 	app := app.New()
 	window := app.NewWindow("Markdown Resume Builder")
 
@@ -114,7 +114,7 @@ func HandleGui(ctx context.Context, srv *http.Server, wg *sync.WaitGroup) error 
 	form.OnSubmit = func() {
 		statusText.SetText("Building resume...")
 		form.Disable()
-		err := buildResume(ctx, srv, wg, strings.TrimSpace(sourceFile.Text), mode.Selected, strings.TrimSpace(destinationFolder.Text), strings.TrimSpace(fontAwesomeKit.Text), strings.TrimSpace(photoFile.Text))
+		err := buildResume(ctx, srv, wg, cwd, strings.TrimSpace(sourceFile.Text), mode.Selected, strings.TrimSpace(destinationFolder.Text), strings.TrimSpace(fontAwesomeKit.Text), strings.TrimSpace(photoFile.Text))
 		form.Enable()
 		if err != nil {
 			statusText.SetText(fmt.Sprintf("Error building resume: %v", err))
