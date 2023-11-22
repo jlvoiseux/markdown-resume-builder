@@ -26,7 +26,7 @@ func buildResume(ctx context.Context, srv *http.Server, wg *sync.WaitGroup, cwd 
 			min-width: 200px;
 			max-width: 1200px;
 			margin: 0 auto;
-			padding: 45px;
+			padding: 25px;
 		}
 	
 		@media (max-width: 767px) {
